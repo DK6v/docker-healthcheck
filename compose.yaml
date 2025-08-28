@@ -1,0 +1,7 @@
+services:
+  healthcheck:
+    image: healthcheck:${VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    scale: 0
