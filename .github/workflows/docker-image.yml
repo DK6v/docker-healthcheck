@@ -2,8 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ 'v*' ]
+    tags: [ 'v*', 'v*.*', 'v*.*.*' ]
   workflow_dispatch:
     inputs:
       custom_tag:
@@ -16,7 +15,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-
     - name: Check secrets exist
       run: |
         if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
@@ -43,14 +41,13 @@ jobs:
 
     - name: Extract metadata for Docker
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: dk6v/healthcheck
         tags: |
-          type=raw,value=latest,enable=true
-          type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
-          type=ref,event=tag
-          type=sha,enable=${{ github.event_name != 'workflow_dispatch' && github.ref_type != 'tag' }}
+          type=raw,priority=30,value=latest,enable=true
+          type=semver,priority=20,pattern={{version}}
+          type=raw,priority=10,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
     - name: Build and push
       uses: docker/build-push-action@v4
